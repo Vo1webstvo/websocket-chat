@@ -1,38 +1,14 @@
-import {useEffect, useState} from 'react';
-import { Link } from 'react-router-dom';
-import socketIO from 'socket.io-client';
+import { useState } from "react";
+import { Link } from "react-router-dom";
 
-
-import styles from '../styles/Main.module.css';
-
-const socket = socketIO.connect('http://localhost:5000');
+import styles from "../styles/Main.module.css";
 
 const Main = () => {
-  const [name, setName] = useState('');
-  const [room, setRoom] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-
-  // Подписываемся на событие 'errJoin' при монтировании компонента
-  useEffect(() => {
-    socket.on('errJoin', (arg) => {
-      const {data} = arg;
-      setErrorMessage(data.message);
-    });
-
-    // Отписываемся от события при размонтировании компонента
-    return () => {
-      socket.off('errJoin');
-    };
-  }, []);
-
-
+  const [name, setName] = useState("");
+  const [room, setRoom] = useState("");
 
   const handleSubmit = (e) => {
-    // Проверка наличия ошибки и предотвращение отправки формы
-    if (errorMessage) {
-      e.preventDefault();
-      alert(errorMessage); // Оповещение пользователя об ошибке
-    }
+    if (!name && !room) e.preventDefault();
   };
 
   return (
@@ -40,7 +16,7 @@ const Main = () => {
       <div className={styles.container}>
         <h1 className={styles.heading}>Join</h1>
 
-        <form className={styles.form} >
+        <form className={styles.form}>
           <div className={styles.group}>
             <input
               type="text"
@@ -67,7 +43,11 @@ const Main = () => {
           </div>
 
           <Link className={styles.group} to={`/chat?user=${name}&room=${room}`}>
-            <button type="submit" className={styles.button} onClick={handleSubmit}>
+            <button
+              type="submit"
+              className={styles.button}
+              onClick={handleSubmit}
+            >
               Sign In
             </button>
           </Link>
