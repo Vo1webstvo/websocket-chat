@@ -23,12 +23,27 @@ const io = new Server(server, {
 });
 
 io.on('connection', (socket) => {
-  //1) получаем имя и номер компаны и присоеденяемся к конкретной комнате. Когда получаем .on
-  socket.on('join', (data) => {
+  //1) получаем имя и номер комнаты и присоеденяемся к конкретной комнате. Когда получаем .on
+  socket.on('join', async (data) => {
     const { user, room } = data;
+
+    // Проверяем, существует ли пользователь уже в данной комнате
+    const existingUser = findUser({ user, room });
+    if (existingUser) {
+      socket.emit('errJoin', {
+        data: {
+          message: 'Такой пользователь уже есть'
+        }
+      })
+      return;
+    }
+
+
+    //подключаемся к комнате
     socket.join(room);
 
-    const { userInfo } = addUser({ user, room });
+    //добавляем в нашу базу нового пользователя
+    const { userInfo } = await addUser({ user, room });
 
     //и когда получили данные с фронта, отправляем туда 'message' и обьект с данными. Когда отправляем .emit
     socket.emit('message', {
@@ -55,21 +70,35 @@ io.on('connection', (socket) => {
 
   //2) отправка сообщений(получаем с фронта инпут с сообщением и параметры)
   socket.on('sendMessage', ({ location, inputMessage }) => {
-    io.to(location?.room).emit('message', {
-      data: { user: location, message: inputMessage },
-    });
+    const user = findUser(location);
+
+
+    if (user) {
+      console.log(user, 'user')
+      io.to(user.room).emit("message", { data: { user: location, message: inputMessage } });
+    }
   });
 
   //3) выход из комнаты
-  socket.on('leftRoom', (arg) => {
-    const { location } = arg;
-    const { deleteUser } = removeUser(location);
-    io.to(deleteUser?.room).emit('message', {
-      data: { user: { user: 'Admin' }, message: `${deleteUser?.user} has Left the Room` },
-    });
+  socket.on('leftRoom', (params) => {
+    const userDel = removeUser(params);
+
+
+    if (userDel) {
+      console.log(userDel, 'userDel')
+      const { room, user } = userDel;
+
+      io.to(room).emit("message", {
+        data: { user: { user: "Admin" }, message: `${user} has left` },
+      });
+
+      io.to(room).emit("roomUsers", {
+        data: { allUsers: getAllUserRoom(room) },
+      });
+    }
   });
 
-  io.on('disconnect', () => {
+  socket.on('disconnect', () => {
     console.log('Disconnection');
   });
 });

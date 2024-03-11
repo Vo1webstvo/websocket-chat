@@ -1,37 +1,49 @@
-const users = [];
+let users = [];
 
-const addUser = (arg) => {
-  const nameUser = arg?.user?.trim().toLowerCase();
-  const roomUser = arg?.room?.trim().toLowerCase();
+const findUser =  (arg) => {
+  const nameUser =  arg?.user?.trim().toLowerCase();
+  const roomUser =  arg?.room?.trim().toLowerCase();
 
-  const findUserr = users.find((u) => {
+   return users.find((u) => {
     return u?.user?.trim().toLowerCase() === nameUser && u?.room?.trim().toLowerCase() === roomUser;
   });
+};
+
+const addUser =  (arg) => {
+  const findUserr =  findUser(arg);
 
   // выбираем пользователя, либо из findUserr если он уже есть, либо из arg (новый)
   const currentUser = findUserr || arg;
   if (!findUserr) {
     users.push(currentUser);
   }
-  console.log(users, 'users Posle');
 
-  return {
+   return {
     findUserr: !!findUserr,
     userInfo: currentUser,
   };
 };
 
-const getAllUserRoom = (room) => {
-  return users.filter((user) => user?.room === room);
+const getAllUserRoom =  (room) => {
+  const usersThisRoom =  users.filter((user) => user?.room === room);
+  return usersThisRoom;
+
 };
 
-const removeUser = (userInRoom) => {
-  const updateUsers = users.filter(
-    (u) =>
-      (u.room === userInRoom?.room && u.name !== userInRoom?.name) || u.room !== userInRoom?.room,
-  );
-  console.log(updateUsers, 'updateUsers');
-  return updateUsers;
+const removeUser =  (user) => {
+  const found = findUser(user);
+
+  if (found) {
+    users = users.filter(
+        ({ room, user }) => room === found.room && user !== found.user
+    );
+  }
+
+  return found;
 };
 
-module.exports = { addUser, getAllUserRoom, removeUser };
+const checkUserForLogin = (u) => {
+
+}
+
+module.exports = { addUser, getAllUserRoom, findUser, removeUser };
