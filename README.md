@@ -1,5 +1,5 @@
 react js / websocket (socket.io) / express
 
-server: npm i / npm run dev
+https://websocket-chat-sage.vercel.app/
 
-client: npm i / npm run dev
+<img src='./client/src/assets/join.png'>
