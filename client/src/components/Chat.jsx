@@ -1,37 +1,37 @@
-import socketIO from "socket.io-client";
-import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import Messages from "./Messages";
+import socketIO from 'socket.io-client';
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import Messages from './Messages';
 
-const socket = socketIO.connect("http://localhost:5000");
+const socket = socketIO.connect('https://websocket-chat-ye9t.onrender.com');
 
-import styles from "../styles/Chat.module.css";
+import styles from '../styles/Chat.module.css';
 
 const Chat = () => {
   const { search } = useLocation();
   const navigate = useNavigate();
   const [location, setLocation] = useState(null);
   const [arrayMessage, setArrayMessage] = useState([]);
-  const [inputMessage, setInputMessage] = useState("");
+  const [inputMessage, setInputMessage] = useState('');
   const [allUsersInRoom, setAllUsersInRoom] = useState(0);
 
   useEffect(() => {
     const transformLocation = Object.fromEntries(new URLSearchParams(search));
     setLocation(transformLocation);
     //оправляем на server по ключу 'join' данные transformLocation
-    socket.emit("join", transformLocation);
+    socket.emit('join', transformLocation);
   }, [search]);
 
   //еще один useEffect для получения message от server с данными
   useEffect(() => {
-    socket.on("message", (arg) => {
+    socket.on('message', (arg) => {
       const { data } = arg;
       setArrayMessage((_prev) => [..._prev, data]);
     });
   }, []);
 
   useEffect(() => {
-    socket.on("roomUsers", (arg) => {
+    socket.on('roomUsers', (arg) => {
       const { data } = arg;
       setAllUsersInRoom(data.allUsers.length);
     });
@@ -42,13 +42,13 @@ const Chat = () => {
 
     if (!inputMessage) return;
 
-    socket.emit("sendMessage", { inputMessage, location });
-    setInputMessage("");
+    socket.emit('sendMessage', { inputMessage, location });
+    setInputMessage('');
   };
 
   const leftRoom = () => {
-    socket.emit("leftRoom", location);
-    navigate("/");
+    socket.emit('leftRoom', location);
+    navigate('/');
   };
 
   return (
